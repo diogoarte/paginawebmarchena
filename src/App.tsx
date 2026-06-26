@@ -1,130 +1,29 @@
-import { useState, useMemo } from "react";
+import { useState, useMemo, useEffect } from "react";
 import { Header } from "./components/Header";
 import { FilterBar } from "./components/FilterBar";
 import { VideoCard } from "./components/VideoCard";
+import api from "./services/api";
 
-const VIDEOS = [
-  {
-    id: "IhGvxbFmR5s",
-    title: "Registro de Plan de Tesis",
-    thumbnail: "https://i.ytimg.com/vi/IhGvxbFmR5s/hqdefault.jpg",
-    category: "Módulo Tesis",
-    date: "17 Jun 2026",
-    views: "6.1K",
-    duration: "01:03",
-  },
-  {
-    id: "Ur27Qr46Jss",
-    title: "Asignación de Dictaminadores",
-    thumbnail: "https://i.ytimg.com/vi/Ur27Qr46Jss/hqdefault.jpg",
-    category: "Módulo Tesis",
-    date: "17 Jun 2026",
-    views: "5.1K",
-    duration: "1:09",
-  },
-  {
-    id: "5AJOT3VsYfc",
-    title: "Observación de Plan de Tesis",
-    thumbnail: "https://i.ytimg.com/vi/5AJOT3VsYfc/hqdefault.jpg",
-    category: "Módulo Tesis",
-    date: "17 Jun 2026",
-    views: "4.1K",
-    duration: "1:21",
-  },
-    {
-    id: "Ov-RX72Lzfk",
-    title: "Levantar Observaciones",
-    thumbnail: "https://i.ytimg.com/vi/Ov-RX72Lzfk/hqdefault.jpg",
-    category: "Módulo Tesis",
-    date: "17 Jun 2026",
-    views: "3.8K",
-    duration: "1:18",
-  },
-  {
-    id: "K3AooWiMFng",
-    title: "Aprobación de Plan de Tesis",
-    thumbnail: "https://img.youtube.com/vi/K3AooWiMFng/maxresdefault.jpg",
-    category: "Módulo Tesis",
-    date: "19 Jun 2026",
-    views: "1.5K",
-    duration: "1:01",
-  },
-  {
-    id: "",
-    title: "",
-    thumbnail: "",
-    category: "Módulo Tesis",
-    date: "17 Jun 2026",
-    views: "3.1K",
-    duration: "12:45",
-  },
-  {
-    id: "L0g7Ik8no0Y",
-    title: "Fin de Asesoría",
-    thumbnail: "https://i.ytimg.com/vi/L0g7Ik8no0Y/hqdefault.jpg",
-    category: "Módulo Tesis",
-    date: "17 Jun 2026",
-    views: "3.5K",
-    duration: "0:56",
-  },
-  {
-    id: "Asignación del Tercer Jurado",
-    title: "RhP28BOn7R8",
-    thumbnail: "https://i.ytimg.com/vi/RhP28BOn7R8/hqdefault.jpg",
-    category: "Módulo Tesis",
-    date: "17 Jun 2026",
-    views: "1.4K",
-    duration: "0:53",
-  },
-  {
-    id: "_ClHff0RBts",
-    title: "Aprobar Borrador de Tesis",
-    thumbnail: "https://i.ytimg.com/vi/_ClHff0RBts/hqdefault.jpg",
-    category: "Módulo Tesis",
-    date: "17 Jun 2026",
-    views: "2.1K",
-    duration: "0:55",
-  },
-  {
-    id: "lWF0hYQnPdA",
-    title: "Registro de Sustentación",
-    thumbnail: "https://i.ytimg.com/vi/lWF0hYQnPdA/hqdefault.jpg",
-    category: "Módulo Tesis",
-    date: "17 Jun 2026",
-    views: "3.3K",
-    duration: "1:11",
-  },
-  {
-    id: "B43LhhMSe8Q",
-    title: "Módulo de Gestión de Calidad",
-    thumbnail: "https://i.ytimg.com/vi/B43LhhMSe8Q/hqdefault.jpg",
-    category: "Módulo Tesis",
-    date: "18 Jun 2026",
-    views: "2.8K",
-    duration: "1:52",
-  },
-  {
-    id: "ElnRCZBU7rM",
-    title: "Seguimiento de Metas",
-    thumbnail: "https://i.ytimg.com/vi/eUTECWjkrA8/hqdefault.jpg",
-    category: "Módulo Tesis",
-    date: "17 Jun 2026",
-    views: "1.4K",
-    duration: "1:34",
-  },
-  {
-    id: "-9sAEqtY3rA",
-    title: "Investigación, Desarrollo e Investigación",
-    thumbnail: "https://i.ytimg.com/vi/-9sAEqtY3rA/hqdefault.jpg",
-    category: "Módulo Tesis",
-    date: "17 Jun 2026",
-    views: "2.1K",
-    duration: "1:03",
-  },
 
-];
+  interface Video {
+  id: number;
+  titulo: string;
+  youtube_id: string;
+  url: string;
+  categoria: string;
+  fecha: string;
+  }
 
 export default function App() {
+  const [videos, setVideos] = useState<Video[]>([]);
+  //ventana emergente
+  const [showModal, setShowModal] = useState(false);
+  const [newVideo, setNewVideo] = useState({
+    titulo: "",
+    url: "",
+    categoria: "Módulo Tesis"
+  });
+
   const [categories, setCategories] = useState([
     "Módulo Tesis",
   ]);
@@ -132,16 +31,16 @@ export default function App() {
   const [searchQuery, setSearchQuery] = useState("");
 
   const filteredVideos = useMemo(() => {
-    return VIDEOS.filter((video) => {
+    return videos.filter((video) => {
       const matchesCategory =
-        selectedCategory === "Todos" || video.category === selectedCategory;
+        selectedCategory === "Todos" || video.categoria === selectedCategory;
       const matchesSearch =
         searchQuery === "" ||
-        video.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        video.category.toLowerCase().includes(searchQuery.toLowerCase());
+        video.titulo.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        video.categoria.toLowerCase().includes(searchQuery.toLowerCase());
       return matchesCategory && matchesSearch;
     });
-  }, [selectedCategory, searchQuery]);
+  }, [videos, selectedCategory, searchQuery]);
 
   const handleVideoClick = (videoId: string) => {
     window.open(`https://www.youtube.com/watch?v=${videoId}`, "_blank", "noopener,noreferrer");
@@ -162,6 +61,21 @@ export default function App() {
       }
     }
   };
+  //Cargar videos
+  const cargarVideos = async () => {
+    try {
+      const response = await api.get("/videos");
+      console.log("Respuesta del backend:");
+      console.log(response.data);
+
+      setVideos(response.data);
+    } catch (error) {
+      console.error("Error al cargar videos:", error);
+    }
+  };
+  useEffect(() => {
+    cargarVideos();
+  }, []);
 
   return (
     <div className="min-h-screen bg-[#010B1E] text-white antialiased">
@@ -203,6 +117,7 @@ export default function App() {
             {/* Lado derecho */}
             <button
               type="button"
+              onClick={() => setShowModal(true)}
               className="px-5 py-2.5 rounded-xl border border-[#00A3FF]/20 bg-[#00A3FF]/10 text-[#00A3FF] hover:text-white hover:border-[#00A3FF] hover:bg-[#00A3FF]/20 font-semibold text-sm transition-all duration-200"
             >
               + Agregar Video
@@ -214,13 +129,13 @@ export default function App() {
               {filteredVideos.map((video) => (
                 <VideoCard
                   key={video.id}
-                  title={video.title}
-                  thumbnail={video.thumbnail}
-                  videoId={video.id}
-                  category={video.category}
-                  date={video.date}
-                  views={video.views}
-                  duration={video.duration}
+                  title={video.titulo}
+                  thumbnail={`https://img.youtube.com/vi/${video.youtube_id}/hqdefault.jpg`}
+                  videoId={video.youtube_id}
+                  category={video.categoria}
+                  date={video.fecha}
+                  views=""
+                  duration=""
                   onVideoClick={handleVideoClick}
                 />
               ))}
@@ -233,6 +148,77 @@ export default function App() {
           <p>© 2026 Softia Ecosistema — Todos los derechos reservados</p>
         </div>
       </footer>
+
+      {showModal && (
+        <div className="fixed inset-0 bg-black/70 flex items-center justify-center z-50">
+          <div className="bg-[#0B1224] p-6 rounded-2xl w-full max-w-md border border-[#1E293B]">
+            <h2 className="text-xl font-bold mb-4">Agregar Video</h2>
+            {/* Título */}
+            <input
+              type="text"
+              placeholder="Título del video"
+              className="w-full mb-3 p-2 rounded bg-[#010B1E] border border-[#1E293B]"
+              value={newVideo.titulo}
+              onChange={(e) =>
+                setNewVideo({ ...newVideo, titulo: e.target.value })
+              }
+            />
+            {/* URL */}
+            <input
+              type="text"
+              placeholder="URL de YouTube"
+              className="w-full mb-3 p-2 rounded bg-[#010B1E] border border-[#1E293B]"
+              value={newVideo.url}
+              onChange={(e) =>
+                setNewVideo({ ...newVideo, url: e.target.value })
+              }
+            />
+            {/* Categoría */}
+            <select
+              className="w-full mb-4 p-2 rounded bg-[#010B1E] border border-[#1E293B]"
+              value={newVideo.categoria}
+              onChange={(e) =>
+                setNewVideo({ ...newVideo, categoria: e.target.value })
+              }
+            >
+              {categories.map((cat) => (
+                <option key={cat} value={cat}>
+                  {cat}
+                </option>
+              ))}
+            </select>
+            {/* Botones */}
+            <div className="flex justify-end gap-2">
+              <button
+                className="px-4 py-2 rounded bg-gray-600 hover:bg-gray-500"
+                onClick={() => setShowModal(false)}
+              >
+                Cancelar
+              </button>
+              <button
+                className="px-4 py-2 rounded bg-[#00A3FF] text-white hover:bg-[#0085cc]"
+                onClick={async () => {
+                  try {
+                    await api.post("/videos", newVideo);
+                    await cargarVideos(); // refrescar lista
+                    setNewVideo({
+                      titulo: "",
+                      url: "",
+                      categoria: "Módulo Tesis"
+                    });
+                    setShowModal(false);
+                  } catch (error) {
+                    console.error("Error al agregar video:", error);
+                  }
+                }}
+              >
+                Guardar
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
     </div>
   );
 }
