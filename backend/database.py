@@ -11,7 +11,7 @@ def get_connection():
 
         user="postgres",
 
-        password="PASSWORD",
+        password="Password",
 
         port="5432"
 

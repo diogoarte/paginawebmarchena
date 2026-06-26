@@ -44,6 +44,23 @@ def listar_videos():
         })
     return videos
 
+@router.get("/categorias")
+def listar_categorias():
+    conexion = get_connection()
+    cursor = conexion.cursor()
+
+    cursor.execute("""
+        SELECT DISTINCT categoria
+        FROM videos
+        ORDER BY categoria
+    """)
+
+    datos = cursor.fetchall()
+    cursor.close()
+    conexion.close()
+
+    return [row[0] for row in datos]
+
 #post
 @router.post("/videos")
 def agregar_video(video:Video):
