@@ -184,17 +184,32 @@ export default function App() {
           </div>
         ) : (
           <>
-            <div className="mb-8">
+          <div className="mb-8 flex justify-between items-center">
+            {/* Lado izquierdo */}
+            <div>
               <span className="text-xs font-semibold text-[#00A3FF] uppercase tracking-wider block mb-1">
                 Índice de Módulos
               </span>
+
               <h2 className="text-3xl font-bold tracking-tight text-white flex items-center gap-3">
                 {selectedCategory === "Todos" ? "Todos los Módulos" : selectedCategory}
+
                 <span className="text-sm font-medium px-2.5 py-0.5 rounded-full bg-[#00A3FF]/10 text-[#00A3FF] border border-[#00A3FF]/20">
                   +{filteredVideos.length} videos disponibles
                 </span>
               </h2>
             </div>
+
+            {/* Lado derecho */}
+            <button
+              type="button"
+              className="px-5 py-2.5 rounded-xl border border-[#00A3FF]/20 bg-[#00A3FF]/10 text-[#00A3FF] hover:text-white hover:border-[#00A3FF] hover:bg-[#00A3FF]/20 font-semibold text-sm transition-all duration-200"
+            >
+              + Agregar Video
+            </button>
+          </div>
+
+            {/* VIDEOS */}
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
               {filteredVideos.map((video) => (
                 <VideoCard
