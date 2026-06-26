@@ -10,9 +10,13 @@ import api from "./services/api";
   titulo: string;
   youtube_id: string;
   url: string;
-  categoria: string;
+  modulo: string;
   fecha: string;
   }
+  interface Modulo {
+  id: number;
+  nombre: string;
+}
 
 export default function App() {
   const [videos, setVideos] = useState<Video[]>([]);
@@ -21,44 +25,35 @@ export default function App() {
   const [newVideo, setNewVideo] = useState({
     titulo: "",
     url: "",
-    categoria: "Módulo Tesis"
-  });
+    modulo_id: 0
 
-  const [categories, setCategories] = useState<string[]>([]);
-  const [selectedCategory, setSelectedCategory] = useState("Todos");
+  });
+  //modulo
+  const [showModuleModal, setShowModuleModal] = useState(false);
+  const [newModule, setNewModule] = useState({
+    nombre: ""
+  });
+  //
+  const [modulos, setModulos] = useState<Modulo[]>([]);
+  const [selectedModulo, setSelectedModulo] = useState("Todos");
   const [searchQuery, setSearchQuery] = useState("");
 
   const filteredVideos = useMemo(() => {
     return videos.filter((video) => {
       const matchesCategory =
-        selectedCategory === "Todos" || video.categoria === selectedCategory;
+        selectedModulo === "Todos" || video.modulo === selectedModulo;
       const matchesSearch =
         searchQuery === "" ||
         video.titulo.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        video.categoria.toLowerCase().includes(searchQuery.toLowerCase());
+        video.modulo.toLowerCase().includes(searchQuery.toLowerCase());
       return matchesCategory && matchesSearch;
     });
-  }, [videos, selectedCategory, searchQuery]);
+  }, [videos, selectedModulo, searchQuery]);
 
   const handleVideoClick = (videoId: string) => {
     window.open(`https://www.youtube.com/watch?v=${videoId}`, "_blank", "noopener,noreferrer");
   };
 
-  const handleAddModule = () => {
-    const nuevoModulo = prompt("Ingresa el nombre del nuevo módulo para el ecosistema:");
-    if (nuevoModulo && nuevoModulo.trim() !== "") {
-      const nombreFormateado = nuevoModulo.startsWith("Módulo") 
-        ? nuevoModulo.trim() 
-        : `Módulo ${nuevoModulo.trim()}`;
-      
-      if (!categories.includes(nombreFormateado)) {
-        setCategories([...categories, nombreFormateado]);
-        setSelectedCategory(nombreFormateado);
-      } else {
-        alert("Este módulo ya existe.");
-      }
-    }
-  };
   //Cargar videos
   const cargarVideos = async () => {
     try {
@@ -73,16 +68,26 @@ export default function App() {
   };
   useEffect(() => {
     cargarVideos();
-    cargarCategorias();
+    cargarModulos();
 
   }, []);
-//cargar modulos (categorias)
-  const cargarCategorias = async () => {
+
+
+    useEffect(() => {
+    if (modulos.length > 0) {
+      setNewVideo((prev) => ({
+        ...prev,
+        modulo_id: modulos[0].id
+      }));
+    }
+    }, [modulos]);
+//cargar modulos
+  const cargarModulos = async () => {
     try {
-      const response = await api.get("/categorias"); 
-      setCategories(response.data);
+      const response = await api.get("/modulos"); 
+      setModulos(response.data);
     } catch (error) {
-      console.error("Error al cargar categorias:", error);
+      console.error("Error al cargar modulo:", error);
     }
   };
 
@@ -91,12 +96,12 @@ export default function App() {
     <div className="min-h-screen bg-[#010B1E] text-white antialiased">
       <Header />
       <FilterBar
-        categories={categories}
-        selectedCategory={selectedCategory}
-        onCategoryChange={setSelectedCategory}
+        modulos={modulos}
+        selectedModulo={selectedModulo}
+        onModuloChange={setSelectedModulo}
         searchQuery={searchQuery}
         onSearchChange={setSearchQuery}
-        onAddModule={handleAddModule}
+        onAddModule={() => setShowModuleModal(true)}
         totalVideos={filteredVideos.length}
       />
       <main className="container mx-auto px-4 py-8 max-w-7xl">
@@ -108,7 +113,7 @@ export default function App() {
             </span>
 
             <h2 className="text-3xl font-bold tracking-tight text-white flex items-center gap-3">
-              {selectedCategory === "Todos" ? "Todos los Módulos" : selectedCategory}
+              {selectedModulo === "Todos" ? "Todos los Módulos" : selectedModulo}
 
               <span className="text-sm font-medium px-2.5 py-0.5 rounded-full bg-[#00A3FF]/10 text-[#00A3FF] border border-[#00A3FF]/20">
                 +{filteredVideos.length} videos disponibles
@@ -142,7 +147,7 @@ export default function App() {
                 title={video.titulo}
                 thumbnail={`https://img.youtube.com/vi/${video.youtube_id}/hqdefault.jpg`}
                 videoId={video.youtube_id}
-                category={video.categoria}
+                category={video.modulo}
                 date={video.fecha}
                 views=""
                 duration=""
@@ -183,17 +188,17 @@ export default function App() {
                 setNewVideo({ ...newVideo, url: e.target.value })
               }
             />
-            {/* Categoría */}
+            {/* Modulo */}
             <select
               className="w-full mb-4 p-2 rounded bg-[#010B1E] border border-[#1E293B]"
-              value={newVideo.categoria}
+              value={newVideo.modulo_id}
               onChange={(e) =>
-                setNewVideo({ ...newVideo, categoria: e.target.value })
+                setNewVideo({ ...newVideo, modulo_id: Number(e.target.value) })
               }
             >
-              {categories.map((cat) => (
-                <option key={cat} value={cat}>
-                  {cat}
+              {modulos.map((modulo) => (
+                <option key={modulo.id} value={modulo.id}>
+                  {modulo.nombre}
                 </option>
               ))}
             </select>
@@ -211,11 +216,11 @@ export default function App() {
                   try {
                     await api.post("/videos", newVideo);
                     await cargarVideos();
-                    await cargarCategorias();
+                    await cargarModulos();
                     setNewVideo({
-                      titulo: "",
-                      url: "",
-                      categoria: "Módulo Tesis"
+                      titulo: newVideo.titulo,
+                      url: newVideo.url,
+                      modulo_id: modulos.length > 0 ? modulos[0].id : 1
                     });
                     setShowModal(false);
                   } catch (error) {
@@ -229,6 +234,69 @@ export default function App() {
           </div>
         </div>
       )}
+
+{/* Ventana emergente para agregar modulos */}
+{showModuleModal && (
+  <div className="fixed inset-0 bg-black/70 flex items-center justify-center z-50">
+    
+    <div className="bg-[#0B1224] p-6 rounded-2xl w-full max-w-md border border-[#1E293B]">
+
+      <h2 className="text-xl font-bold mb-4">
+        Crear nuevo módulo
+      </h2>
+
+      {/* INPUT NOMBRE */}
+      <input
+        type="text"
+        placeholder="Nombre del módulo"
+        className="w-full mb-4 p-2 rounded bg-[#010B1E] border border-[#1E293B]"
+        value={newModule.nombre}
+        onChange={(e) =>
+          setNewModule({ nombre: e.target.value })
+        }
+      />
+
+      {/* BOTONES */}
+      <div className="flex justify-end gap-2">
+
+        <button
+          className="px-4 py-2 rounded bg-gray-600 hover:bg-gray-500"
+          onClick={() => setShowModuleModal(false)}
+        >
+          Cancelar
+        </button>
+
+        <button
+          className="px-4 py-2 rounded bg-[#00A3FF] text-white hover:bg-[#0085cc]"
+          onClick={async () => {
+            try {
+              const nombreFormateado = newModule.nombre.startsWith("Módulo")
+                ? newModule.nombre.trim()
+                : `Módulo ${newModule.nombre.trim()}`;
+
+              const response = await api.post("/modulos", {
+                nombre: nombreFormateado
+              });
+
+              setModulos([...modulos, response.data]);
+
+              setSelectedModulo(nombreFormateado);
+              setNewModule({ nombre: "" });
+              setShowModuleModal(false);
+
+            } catch (error) {
+              console.error("Error creando módulo:", error);
+            }
+          }}
+        >
+          Crear
+        </button>
+
+      </div>
+    </div>
+  </div>
+)}
+
 
     </div>
   );

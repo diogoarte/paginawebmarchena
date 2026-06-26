@@ -1,17 +1,20 @@
 interface FilterBarProps {
-  categories: string[];
-  selectedCategory: string;
-  onCategoryChange: (category: string) => void;
+  modulos: Modulo[];
+  selectedModulo: string;
+  onModuloChange: (category: string) => void;
   searchQuery: string;
   onSearchChange: (query: string) => void;
   onAddModule: () => void;
   totalVideos: number;
 }
-
+interface Modulo {
+  id: number;
+  nombre: string;
+}
 export function FilterBar({
-  categories,
-  selectedCategory,
-  onCategoryChange,
+  modulos,
+  selectedModulo,
+  onModuloChange,
   searchQuery,
   onSearchChange,
   onAddModule,
@@ -23,33 +26,33 @@ export function FilterBar({
         <div className="flex flex-wrap items-center gap-2">
           <button
             type="button"
-            onClick={() => onCategoryChange("Todos")}
+            onClick={() => onModuloChange("Todos")}
             className={`px-5 py-2.5 rounded-xl font-semibold text-sm transition-all duration-200 flex items-center gap-2 ${
-              selectedCategory === "Todos"
+              selectedModulo === "Todos"
                 ? "bg-[#007BFF] text-white shadow-lg shadow-blue-500/20 scale-105"
                 : "bg-[#0A1631] text-slate-400 hover:text-white hover:bg-[#102144]"
             }`}
           >
             Todos
             <span className={`text-xs px-1.5 py-0.5 rounded-md font-bold ${
-              selectedCategory === "Todos" ? "bg-white/20 text-white" : "bg-[#16284E] text-slate-400"
+              selectedModulo === "Todos" ? "bg-white/20 text-white" : "bg-[#16284E] text-slate-400"
             }`}>
               {totalVideos}
             </span>
           </button>
 
-          {categories.map((cat) => (
+          {modulos.map((m) => (
             <button
               type="button"
-              key={cat}
-              onClick={() => onCategoryChange(cat)}
+              key={m.id}
+              onClick={() => onModuloChange(m.nombre)}
               className={`px-5 py-2.5 rounded-xl font-semibold text-sm transition-all duration-200 ${
-                selectedCategory === cat
+                selectedModulo === m.nombre
                   ? "bg-[#007BFF] text-white shadow-lg shadow-blue-500/20 scale-105"
                   : "bg-[#0A1631] text-slate-400 hover:text-white hover:bg-[#102144]"
               }`}
             >
-              {cat}
+              {m.nombre}
             </button>
           ))}
 
